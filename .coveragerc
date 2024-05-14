@@ -1,0 +1,6 @@
+[run]
+source = ba_web_app
+omit = 
+    tests/*
+    autoapp.py
+
