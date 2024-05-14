@@ -8,7 +8,7 @@ env.read_env()
 config_dict = {
     "broker_url": env.str("REDIS_URL"),
     "result_backend": env.str("REDIS_URL"),
-    "task_ignore_result": True,
+    "task_ignore_result": False,
 }
 celery.config_from_object(config_dict)
 
