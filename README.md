@@ -18,6 +18,7 @@ npm run-script build
 export FLASK_ENV=production
 export FLASK_DEBUG=0
 export DATABASE_URL="sqlite:////tmp/biocurator.db"
+export REDIS_URL=redis://localhost:6379/0
 ```
 
 #### Initialize DB:
@@ -29,6 +30,8 @@ flask db upgrade
 
 #### Run:
 ```
+docker run -it -p '6379:6379' redis
+celery -A autoapp.celery worker
 flask run
 ```
 

@@ -8,6 +8,7 @@ from flask import (
     render_template,
     request,
     url_for,
+    jsonify
 )
 from flask_login import login_required, login_user, logout_user
 
@@ -75,3 +76,18 @@ def about():
     """About page."""
     form = LoginForm(request.form)
     return render_template("public/about.html", form=form)
+
+@blueprint.route('/add', methods=['POST'])
+def add():
+    """Add two numbers.
+    Basically "Hello World" for celery.
+    Try:
+    curl -X POST http://localhost:5000/add -H "Content-Type: application/json" -d '{"a": 10, "b": 20}'
+    """
+    from ba_web_app.tasks import add_numbers
+    data = request.get_json()
+    if not data or 'a' not in data or 'b' not in data:
+        return jsonify({'error': 'Please provide both a and b'}), 400
+
+    task = add_numbers.delay(data['a'], data['b'])
+    return jsonify({'message': 'Task submitted successfully', 'task_id': task.id}), 202
