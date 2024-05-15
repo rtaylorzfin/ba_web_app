@@ -6,8 +6,8 @@ env = Env()
 env.read_env()
 
 config_dict = {
-    "broker_url": env.str("REDIS_URL"),
-    "result_backend": env.str("REDIS_URL"),
+    "broker_url": env.str("REDIS_URL", "redis://localhost:6379/0"),
+    "result_backend": env.str("REDIS_URL", "redis://localhost:6379/0"),
     "task_ignore_result": False,
 }
 celery.config_from_object(config_dict)
