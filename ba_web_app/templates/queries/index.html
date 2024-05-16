@@ -1,0 +1,33 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container-narrow">
+        <h1 class="mt-5">List of Queries</h1>
+        <br/>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Assistant</th>
+                    <th>Prompt</th>
+                    <th>Functions</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for query in queries %}
+                    <tr>
+                        <td>{{ query.id }}</td>
+                        <td>{{ query.assistant }}</td>
+                        <td>{{ query.prompt }}</td>
+                        <td>{{ query.functions }}</td>
+                        <td>{{ query.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/queries/new" class="btn btn-primary">Create New</a>
+    </div>
+
+{% endblock %}
+
