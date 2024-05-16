@@ -4,19 +4,13 @@ from flask_wtf import FlaskForm
 from wtforms import TextAreaField
 from wtforms.validators import DataRequired, Length
 
+
 class SubmitQueryForm(FlaskForm):
     """Submit a biocurator assistant query form."""
 
-    assistant = TextAreaField(
-        "Assistant", validators=[DataRequired(), Length(min=3)]
-    )
-    prompt = TextAreaField(
-        "Prompt", validators=[DataRequired(), Length(min=6)]
-    )
-    functions = TextAreaField(
-        "Functions", validators=[DataRequired(), Length(min=6)]
-    )
-
+    assistant = TextAreaField("Assistant", validators=[DataRequired(), Length(min=3)])
+    prompt = TextAreaField("Prompt", validators=[DataRequired(), Length(min=6)])
+    functions = TextAreaField("Functions", validators=[DataRequired(), Length(min=6)])
 
     def __init__(self, *args, **kwargs):
         """Create instance."""

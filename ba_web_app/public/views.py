@@ -4,20 +4,20 @@ from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
     url_for,
-    jsonify
 )
 from flask_login import login_required, login_user, logout_user
 
+from ba_web_app.celery_utils import celery
 from ba_web_app.extensions import login_manager
 from ba_web_app.public.forms import LoginForm
 from ba_web_app.user.forms import RegisterForm
 from ba_web_app.user.models import User
 from ba_web_app.utils import flash_errors
-from ba_web_app.celery_utils import celery
 
 blueprint = Blueprint("public", __name__, static_folder="../static")
 
@@ -78,34 +78,38 @@ def about():
     form = LoginForm(request.form)
     return render_template("public/about.html", form=form)
 
-@blueprint.route('/add', methods=['POST'])
+
+@blueprint.route("/add", methods=["POST"])
 def add():
     """Add two numbers.
+
     Basically "Hello World" for celery.
     Try:
     curl -X POST http://localhost:5000/add -H "Content-Type: application/json" -d '{"a": 10, "b": 20}'
     """
     from ba_web_app.tasks import add_numbers
+
     data = request.get_json()
-    if not data or 'a' not in data or 'b' not in data:
-        return jsonify({'error': 'Please provide both a and b'}), 400
+    if not data or "a" not in data or "b" not in data:
+        return jsonify({"error": "Please provide both a and b"}), 400
 
-    task = add_numbers.delay(data['a'], data['b'])
-    return jsonify({'message': 'Task submitted successfully', 'task_id': task.id}), 202
+    task = add_numbers.delay(data["a"], data["b"])
+    return jsonify({"message": "Task submitted successfully", "task_id": task.id}), 202
 
-@blueprint.route('/status/<task_id>', methods=['GET'])
+
+@blueprint.route("/status/<task_id>", methods=["GET"])
 def status(task_id):
     """Get the status and result of a task."""
     task = celery.AsyncResult(task_id)
     response = {
-        'status': task.state,
-        'result': task.result if task.state == 'SUCCESS' else None,
-        'info': None
+        "status": task.state,
+        "result": task.result if task.state == "SUCCESS" else None,
+        "info": None,
     }
-    if task.state == 'FAILURE':
-        response['info'] = str(task.info)  # Provide details if the task failed
-    elif task.state == 'PENDING':
-        response['info'] = 'Task is still pending'
-    elif task.state == 'STARTED' or task.state == 'RETRY':
-        response['info'] = 'Task is in progress'
+    if task.state == "FAILURE":
+        response["info"] = str(task.info)  # Provide details if the task failed
+    elif task.state == "PENDING":
+        response["info"] = "Task is still pending"
+    elif task.state == "STARTED" or task.state == "RETRY":
+        response["info"] = "Task is in progress"
     return jsonify(response)
