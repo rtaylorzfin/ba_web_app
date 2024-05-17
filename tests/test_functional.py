@@ -9,7 +9,6 @@ from ba_web_app.user.models import User
 
 from .factories import UserFactory
 
-
 # class TestLoggingIn:
 #     """Login."""
 #

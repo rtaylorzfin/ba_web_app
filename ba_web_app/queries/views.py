@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Query views."""
 from flask import Blueprint, render_template, request
+
 from ba_web_app.queries.forms import SubmitQueryForm
 from ba_web_app.queries.models import Query
 

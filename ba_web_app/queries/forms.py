@@ -4,6 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import TextAreaField
 from wtforms.validators import DataRequired, Length
 
+
 class SubmitQueryForm(FlaskForm):
     """Submit a biocurator assistant query form."""
 

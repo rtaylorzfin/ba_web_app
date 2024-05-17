@@ -1,5 +1,6 @@
-from environs import Env
 from celery import Celery
+from environs import Env
+
 celery = Celery(__name__, include=['ba_web_app.tasks'])
 
 env = Env()

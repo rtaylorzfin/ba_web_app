@@ -4,20 +4,20 @@ from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
     url_for,
-    jsonify
 )
 from flask_login import login_required, login_user, logout_user
 
+from ba_web_app.celery_utils import celery
 from ba_web_app.extensions import login_manager
 from ba_web_app.public.forms import LoginForm
 from ba_web_app.user.forms import RegisterForm
 from ba_web_app.user.models import User
 from ba_web_app.utils import flash_errors
-from ba_web_app.celery_utils import celery
 
 blueprint = Blueprint("public", __name__, static_folder="../static")
 
