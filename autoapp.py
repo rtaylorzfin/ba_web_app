@@ -1,3 +1,9 @@
+"""
+Root Module.
+
+This is the root of the project.
+"""
+
 from ba_web_app.app import create_app
 from ba_web_app.celery_utils import init_celery
 

@@ -34,7 +34,7 @@ def submit():
 
     if form.validate_on_submit():
         # Save the query to the database
-        query = Query.create(
+        Query.create(
             assistant=form.assistant.data,
             prompt=form.prompt.data,
             functions=form.functions.data,

@@ -82,6 +82,7 @@ def about():
 @blueprint.route("/add", methods=["POST"])
 def add():
     """Add two numbers.
+
     Basically "Hello World" for celery.
     Try:
     curl -X POST http://localhost:5000/add -H "Content-Type: application/json" -d '{"a": 10, "b": 20}'
