@@ -11,7 +11,7 @@ class Query(PkModel):
     __tablename__ = "queries"
     id = Column(db.Integer, primary_key=True)
 
-    #long text field:
+    # long text field:
     assistant = Column(db.Text, nullable=False)
     prompt = Column(db.Text, nullable=False)
     functions = Column(db.Text, nullable=False)

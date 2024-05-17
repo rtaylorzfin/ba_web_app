@@ -78,7 +78,8 @@ def about():
     form = LoginForm(request.form)
     return render_template("public/about.html", form=form)
 
-@blueprint.route('/add', methods=['POST'])
+
+@blueprint.route("/add", methods=["POST"])
 def add():
     """Add two numbers.
     Basically "Hello World" for celery.
@@ -86,26 +87,28 @@ def add():
     curl -X POST http://localhost:5000/add -H "Content-Type: application/json" -d '{"a": 10, "b": 20}'
     """
     from ba_web_app.tasks import add_numbers
+
     data = request.get_json()
-    if not data or 'a' not in data or 'b' not in data:
-        return jsonify({'error': 'Please provide both a and b'}), 400
+    if not data or "a" not in data or "b" not in data:
+        return jsonify({"error": "Please provide both a and b"}), 400
 
-    task = add_numbers.delay(data['a'], data['b'])
-    return jsonify({'message': 'Task submitted successfully', 'task_id': task.id}), 202
+    task = add_numbers.delay(data["a"], data["b"])
+    return jsonify({"message": "Task submitted successfully", "task_id": task.id}), 202
 
-@blueprint.route('/status/<task_id>', methods=['GET'])
+
+@blueprint.route("/status/<task_id>", methods=["GET"])
 def status(task_id):
     """Get the status and result of a task."""
     task = celery.AsyncResult(task_id)
     response = {
-        'status': task.state,
-        'result': task.result if task.state == 'SUCCESS' else None,
-        'info': None
+        "status": task.state,
+        "result": task.result if task.state == "SUCCESS" else None,
+        "info": None,
     }
-    if task.state == 'FAILURE':
-        response['info'] = str(task.info)  # Provide details if the task failed
-    elif task.state == 'PENDING':
-        response['info'] = 'Task is still pending'
-    elif task.state == 'STARTED' or task.state == 'RETRY':
-        response['info'] = 'Task is in progress'
+    if task.state == "FAILURE":
+        response["info"] = str(task.info)  # Provide details if the task failed
+    elif task.state == "PENDING":
+        response["info"] = "Task is still pending"
+    elif task.state == "STARTED" or task.state == "RETRY":
+        response["info"] = "Task is in progress"
     return jsonify(response)
