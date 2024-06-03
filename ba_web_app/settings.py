@@ -6,6 +6,8 @@ Most configuration is set via environment variables.
 For local development, use a .env file to set
 environment variables.
 """
+import os
+
 from environs import Env
 
 env = Env()
@@ -25,3 +27,6 @@ CACHE_TYPE = (
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 WTF_CSRF_CHECK_DEFAULT = False
+
+project_path = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = env.str("UPLOAD_FOLDER", default=project_path + "/uploads")
