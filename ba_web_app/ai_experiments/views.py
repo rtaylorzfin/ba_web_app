@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """AiExperiment views."""
 import os, datetime
+from assistant import read_config
 
 from flask import Blueprint, current_app, render_template, request
 from werkzeug.utils import secure_filename
@@ -23,6 +24,7 @@ def index():
 @blueprint.route("/new/")
 def create():
     """Submit a AI Experiment."""
+    # config = read_config("/tmp/biocurator-assistant/config.cfg")
     form = SubmitAiExperimentForm(request.form)
     return render_template("ai_experiments/submit.html", form=form)
 
