@@ -4,7 +4,7 @@
 <div class="container-narrow">
   <h1 class="mt-5">Submit</h1>
     <br/>
-    <form id="submitQueryForm" class="form" method="POST" action="/queries/submit" enctype="multipart/form-data" role="form">
+    <form id="submitAiExperimentForm" class="form" method="POST" action="/ai_experiments/submit" enctype="multipart/form-data" role="form">
            {{ form.csrf_token }}
             <div class="form-group">
                 {{form.assistant.label}}

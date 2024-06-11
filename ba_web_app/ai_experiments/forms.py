@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Query forms."""
+"""AiExperiment forms."""
 from flask_wtf import FlaskForm
 from wtforms import TextAreaField
 from wtforms.validators import DataRequired, Length
 
 
-class SubmitQueryForm(FlaskForm):
+class SubmitAiExperimentForm(FlaskForm):
     """Submit a biocurator assistant query form."""
 
     assistant = TextAreaField("Assistant", validators=[DataRequired(), Length(min=3)])
@@ -14,12 +14,12 @@ class SubmitQueryForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         """Create instance."""
-        super(SubmitQueryForm, self).__init__(*args, **kwargs)
+        super(SubmitAiExperimentForm, self).__init__(*args, **kwargs)
         self.user = None
 
     def validate(self, **kwargs):
         """Validate the form."""
-        initial_validation = super(SubmitQueryForm, self).validate()
+        initial_validation = super(SubmitAiExperimentForm, self).validate()
         if not initial_validation:
             return False
         return True

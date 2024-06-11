@@ -2,7 +2,7 @@
 {% extends "layout.html" %}
 {% block content %}
     <div class="container-narrow">
-        <h1 class="mt-5">List of Queries</h1>
+        <h1 class="mt-5">List of Experiments</h1>
         <br/>
         <table class="table table-striped">
             <thead>
@@ -15,18 +15,18 @@
                 </tr>
             </thead>
             <tbody>
-                {% for query in queries %}
+                {% for experiment in ai_experiments %}
                     <tr>
-                        <td>{{ query.id }}</td>
-                        <td>{{ query.assistant }}</td>
-                        <td>{{ query.prompt }}</td>
-                        <td>{{ query.functions }}</td>
-                        <td>{{ query.created_at }}</td>
+                        <td>{{ experiment.id }}</td>
+                        <td>{{ experiment.assistant }}</td>
+                        <td>{{ experiment.prompt }}</td>
+                        <td>{{ experiment.functions }}</td>
+                        <td>{{ experiment.created_at }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <a href="/queries/new" class="btn btn-primary">Create New</a>
+        <a href="/ai_experiments/new" class="btn btn-primary">Create New</a>
     </div>
 
 {% endblock %}
