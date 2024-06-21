@@ -15,7 +15,7 @@ env.read_env()
 
 ENV = env.str("FLASK_ENV", default="production")
 DEBUG = ENV == "development"
-SQLALCHEMY_DATABASE_URI = env.str("DATABASE_URL")
+
 SECRET_KEY = env.str("SECRET_KEY")
 SEND_FILE_MAX_AGE_DEFAULT = env.int("SEND_FILE_MAX_AGE_DEFAULT")
 BCRYPT_LOG_ROUNDS = env.int("BCRYPT_LOG_ROUNDS", default=13)
@@ -28,5 +28,12 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 WTF_CSRF_CHECK_DEFAULT = False
 
-project_path = os.path.abspath(os.path.dirname(__file__))
-UPLOAD_FOLDER = env.str("UPLOAD_FOLDER", default=project_path + "/uploads")
+PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = env.str("UPLOAD_FOLDER", default=PROJECT_PATH + "/uploads")
+OPENAI_API_KEY = env.str("OPENAI_API_KEY")
+DATABASE_URL = f"sqlite:///{PROJECT_PATH}/db.sqlite"
+SQLALCHEMY_DATABASE_URI = DATABASE_URL
+print(f"SQLALCHEMY_DATABASE_URI: {SQLALCHEMY_DATABASE_URI}")
+# Database just use SQLite locally for now
+# get directory of this file
+#SQLALCHEMY_DATABASE_URI = env.str("DATABASE_URL")

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """AiExperiment views."""
 import os, datetime
-from assistant import read_config
 
 from flask import Blueprint, current_app, render_template, request
 from werkzeug.utils import secure_filename
 
 from ba_web_app.ai_experiments.forms import SubmitAiExperimentForm
 from ba_web_app.ai_experiments.models import AiExperiment, AiFileUpload
+from ba_web_app.ai_utils.client import submit_experiment
 
 blueprint = Blueprint(
     "ai_experiments", __name__, url_prefix="/ai_experiments", static_folder="../static"
@@ -52,22 +52,29 @@ def submit():
             functions=form.functions.data,
         )
 
-        files = request.files.getlist("pdfFiles")
-        file_uploads = []
-        for file in files:
+        # The files that were uploaded with the form as "pdfFiles"
+        uploaded_pdf_files = request.files.getlist("pdfFiles")
+
+        # Save the uploaded files to the database as AiFileUpload objects
+        ai_file_uploads = []
+        for file in uploaded_pdf_files:
             if file and file.filename != "":
                 filename = secure_filename(file.filename)
+                file_without_extension, file_extension = os.path.splitext(filename)
 
                 #does it already exist?
                 persisted_filename = os.path.join(flask_app.config["UPLOAD_FOLDER"], filename)
                 while os.path.exists(persisted_filename):
-                    filename_with_timestamp = filename + "_" + str(datetime.datetime.now().timestamp())
+                    timestamp = str(datetime.datetime.now().timestamp()).replace(".", "")
+                    filename_with_timestamp = file_without_extension + "_" + timestamp + file_extension
                     persisted_filename = os.path.join(flask_app.config["UPLOAD_FOLDER"], filename_with_timestamp)
 
                 file.save(persisted_filename)
                 print("file.filename")
                 print(file.filename)
-                file_uploads.append(
+                print("persisted_filename")
+                print(persisted_filename)
+                ai_file_uploads.append(
                     AiFileUpload.create(
                         filename=file.filename,
                         filepath=persisted_filename,
@@ -75,6 +82,14 @@ def submit():
                         ai_experiment_id=ai_experiment.id,
                     )
                 )
+
+        filepaths = [f.filepath for f in ai_file_uploads]
+        submit_experiment(api_key=flask_app.config["OPENAI_API_KEY"],
+                         assistant_instructions=ai_experiment.assistant,
+                         prompt=ai_experiment.prompt,
+                         functions=ai_experiment.functions,
+                         files=filepaths,
+                          unique_id=str(ai_experiment.id))
 
         return render_template("ai_experiments/submitted.html")
 

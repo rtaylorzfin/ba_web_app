@@ -44,4 +44,4 @@ celery>=5.0.5
 redis>=5.0.4
 
 # GitHub repository for biocurator-assistant
-git+https://github.com/rtaylorzfin/biocurator-assistant
+git+https://github.com/rtaylorzfin/agr_biocurator_assistant
