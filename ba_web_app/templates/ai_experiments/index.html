@@ -1,7 +1,7 @@
 
 {% extends "layout.html" %}
 {% block content %}
-    <div class="container-narrow">
+    <div class="container">
         <h1 class="mt-5">List of Experiments</h1>
         <br/>
         <table class="table table-striped">
@@ -17,11 +17,11 @@
             <tbody>
                 {% for experiment in ai_experiments %}
                     <tr>
-                        <td>{{ experiment.id }}</td>
-                        <td>{{ experiment.assistant }}</td>
-                        <td>{{ experiment.prompt }}</td>
-                        <td>{{ experiment.functions }}</td>
-                        <td>{{ experiment.created_at }}</td>
+                        <td><a href="/ai_experiments/view/{{ experiment.id }}">{{ experiment.id }}</a></td>
+                        <td>{{ experiment.assistant[:100] }}{% if experiment.assistant|length > 100 %}...{% endif %}</td>
+                        <td>{{ experiment.prompt[:100] }}{% if experiment.prompt|length > 100 %}...{% endif %}</td>
+                        <td>{{ experiment.functions[:100] }}{% if experiment.functions|length > 100 %}...{% endif %}</td>
+                        <td>{{ experiment.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

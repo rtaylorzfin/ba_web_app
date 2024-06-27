@@ -8,7 +8,7 @@ from wtforms.validators import DataRequired, Length
 class SubmitAiExperimentForm(FlaskForm):
     """Submit a biocurator assistant query form."""
 
-    assistant = TextAreaField("Assistant", validators=[DataRequired(), Length(min=3)])
+    assistant = TextAreaField("Assistant Definition", validators=[DataRequired(), Length(min=3)])
     prompt = TextAreaField("Prompt", validators=[DataRequired(), Length(min=6)])
     functions = TextAreaField("Functions", validators=[DataRequired(), Length(min=6)])
 

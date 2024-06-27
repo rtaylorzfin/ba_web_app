@@ -1,0 +1,46 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mt-5">View Experiment</h1>
+    <h2>Artifacts Download</h2>
+    <div>
+        <a href="{{ url_for('ai_experiments.downloads', ai_experiment_id=ai_experiment.id) }}">Download</a>
+    </div>
+    <br/>
+
+    <h2>Responses</h2>
+    <div>
+        {% for key, response in ai_responses.items() %}
+            <h5>{{ key }}</h5>
+            <pre>
+                {{ response }}
+            </pre>
+        {% endfor %}
+    </div>
+
+    <h2>Assistant Definition</h2>
+    <div>
+        <pre>
+            {{ ai_experiment.assistant }}
+        </pre>
+    </div>
+
+    <br/>
+    <h2>Prompt</h2>
+    <div>
+        <pre>
+            {{ ai_experiment.prompt }}
+        </pre>
+    </div>
+
+    <br/>
+    <h2>Functions</h2>
+    <div>
+        <pre>
+            {{ ai_experiment.functions }}
+        </pre>
+    </div>
+</div>
+{% endblock %}
+
