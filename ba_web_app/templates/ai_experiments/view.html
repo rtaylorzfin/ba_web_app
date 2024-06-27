@@ -13,34 +13,37 @@
     <div>
         {% for key, response in ai_responses.items() %}
             <h5>{{ key }}</h5>
-            <pre>
-                {{ response }}
-            </pre>
+            <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+            <pre>{{ response }}</pre>
         {% endfor %}
     </div>
 
     <h2>Assistant Definition</h2>
     <div>
-        <pre>
-            {{ ai_experiment.assistant }}
-        </pre>
+        <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+        <pre>{{ ai_experiment.assistant }}</pre>
     </div>
 
     <br/>
     <h2>Prompt</h2>
     <div>
-        <pre>
-            {{ ai_experiment.prompt }}
-        </pre>
+        <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+        <pre>{{ ai_experiment.prompt }}</pre>
     </div>
 
     <br/>
     <h2>Functions</h2>
     <div>
-        <pre>
-            {{ ai_experiment.functions }}
-        </pre>
+        <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+        <pre>{{ ai_experiment.functions }}</pre>
     </div>
 </div>
 {% endblock %}
 
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block js %}
+    <script src="{{ url_for('static', filename='js/copy.js') }}"></script>
+{% endblock %}

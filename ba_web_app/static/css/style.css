@@ -1,0 +1,9 @@
+.copy-pre {
+    background-color: #007bff;
+    color: white;
+}
+
+.copied-pre {
+    background-color: #28a745;
+    color: white;
+}
