@@ -4,6 +4,8 @@
     <div class="container">
         <h1 class="mt-5">List of Experiments</h1>
         <br/>
+        <a href="/ai_experiments/new" class="btn btn-primary">Create New</a>
+        <br/>
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -12,6 +14,7 @@
                     <th>Prompt</th>
                     <th>Functions</th>
                     <th>Created At</th>
+                    <th>Download</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,6 +25,7 @@
                         <td>{{ experiment.prompt[:100] }}{% if experiment.prompt|length > 100 %}...{% endif %}</td>
                         <td>{{ experiment.functions[:100] }}{% if experiment.functions|length > 100 %}...{% endif %}</td>
                         <td>{{ experiment.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td><a href="{{ url_for('ai_experiments.downloads', ai_experiment_id=experiment.id) }}">Download</a></td>
                     </tr>
                 {% endfor %}
             </tbody>

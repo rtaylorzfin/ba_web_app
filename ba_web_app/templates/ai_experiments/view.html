@@ -2,7 +2,7 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="container">
-  <h1 class="mt-5">View Experiment</h1>
+  <h1 class="mt-5">Experiment #{{ ai_experiment.id }} : {{ ai_experiment.name }}</h1>
     <h2>Artifacts Download</h2>
     <div>
         <a href="{{ url_for('ai_experiments.downloads', ai_experiment_id=ai_experiment.id) }}">Download</a>
@@ -12,6 +12,15 @@
     <h2>Responses</h2>
     <div>
         {% for key, response in ai_responses.items() %}
+            <h5>{{ key }}</h5>
+            <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+            <pre>{{ response }}</pre>
+        {% endfor %}
+    </div>
+
+    <h2>Responses as CSV</h2>
+    <div>
+        {% for key, response in csv_responses.items() %}
             <h5>{{ key }}</h5>
             <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
             <pre>{{ response }}</pre>
@@ -36,6 +45,11 @@
     <div>
         <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
         <pre>{{ ai_experiment.functions }}</pre>
+    </div>
+
+    <br/>
+    <div>
+        <a href="{{ url_for('ai_experiments.clone', ai_experiment_id=ai_experiment.id) }}" type="button" class="btn btn-secondary mb-3">Create New Experiment As Clone</a>
     </div>
 </div>
 {% endblock %}

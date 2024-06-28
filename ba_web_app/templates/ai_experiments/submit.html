@@ -7,18 +7,22 @@
     <form id="submitAiExperimentForm" class="form" method="POST" action="/ai_experiments/submit" enctype="multipart/form-data" role="form">
            {{ form.csrf_token }}
             <div class="form-group">
+                {{form.name.label}}
+                {{form.name(placeholder="Experiment Name", class_="form-control")}}
+            </div>
+            <div class="form-group mt-3">
                 {{form.assistant.label}}
                 {{form.assistant(placeholder="Assistant", class_="form-control", rows="10")}}
             </div>
-            <div class="form-group">
+            <div class="form-group mt-3">
                 {{form.prompt.label}}
                 {{form.prompt(placeholder="Prompt", class_="form-control", rows="10")}}
             </div>
-            <div class="form-group">
+            <div class="form-group mt-3">
                 {{form.functions.label}}
                 {{form.functions(placeholder="Functions", class_="form-control", rows="10")}}
             </div>
-            <div class="form-group">
+            <div class="form-group mt-3">
                 <label for="pdfFiles">Upload PDF(s)</label>
                 <input type="file" class="form-control" name="pdfFiles" multiple>
             </div>

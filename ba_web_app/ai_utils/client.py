@@ -26,7 +26,7 @@ def submit_experiment(api_key, assistant_instructions, prompt, functions, files,
         flask_app = current_app._get_current_object()
         config = {
             'DEFAULT': {
-                'model': 'gpt-4-0125-preview',
+                'model': flask_app.config["GPT_MODEL"],
                 'assistant_instructions': assistant_instructions,
                 'prompts_yaml_file': prompts_yaml_path,
                 'output_dir': flask_app.config["UPLOAD_FOLDER"] + "/" + unique_id,

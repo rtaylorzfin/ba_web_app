@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """AiExperiment forms."""
 from flask_wtf import FlaskForm
-from wtforms import TextAreaField
+from wtforms import TextAreaField, StringField
 from wtforms.validators import DataRequired, Length
 
 
 class SubmitAiExperimentForm(FlaskForm):
     """Submit a biocurator assistant query form."""
 
+    name = StringField("Name", validators=[DataRequired()])
     assistant = TextAreaField("Assistant Definition", validators=[DataRequired(), Length(min=3)])
     prompt = TextAreaField("Prompt", validators=[DataRequired(), Length(min=6)])
     functions = TextAreaField("Functions", validators=[DataRequired(), Length(min=6)])

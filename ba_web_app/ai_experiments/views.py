@@ -3,9 +3,10 @@
 import os
 import datetime
 import zipfile
+import json
 from io import BytesIO
 
-from flask import Blueprint, current_app, render_template, request, send_file
+from flask import Blueprint, current_app, render_template, request, send_file, flash, redirect
 from werkzeug.utils import secure_filename
 
 from ba_web_app.ai_experiments.forms import SubmitAiExperimentForm
@@ -34,8 +35,9 @@ def view(ai_experiment_id):
     """View a AI Experiment."""
     ai_experiment = AiExperiment.query.get(ai_experiment_id)
     responses = get_ai_responses(ai_experiment)
+    csv_responses = convert_ai_responses_to_csv(responses)
 
-    return render_template("ai_experiments/view.html", ai_experiment=ai_experiment, ai_responses=responses)
+    return render_template("ai_experiments/view.html", ai_experiment=ai_experiment, ai_responses=responses, csv_responses=csv_responses)
 
 @blueprint.route("/submit/", methods=["POST"])
 def submit():
@@ -43,9 +45,9 @@ def submit():
     form = SubmitAiExperimentForm(request.form)
 
     # check if the post request has the file part
-    # if 'pdfFiles' not in request.files:
-    #     flash('No file part')
-    #     return redirect(request.url)
+    if 'pdfFiles' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
 
     flask_app = current_app._get_current_object()
 
@@ -55,6 +57,7 @@ def submit():
     if form.validate_on_submit():
         # Save the AI Experiment to the database
         ai_experiment = AiExperiment.create(
+            name=form.name.data,
             assistant=form.assistant.data,
             prompt=form.prompt.data,
             functions=form.functions.data,
@@ -99,22 +102,53 @@ def submit():
                          files=filepaths,
                           unique_id=str(ai_experiment.id))
 
-        return render_template("ai_experiments/submitted.html")
+        return render_template("ai_experiments/submitted.html", ai_experiment=ai_experiment)
 
     return render_template("ai_experiments/submit.html", form=form)
 
 @blueprint.route("/downloads/<int:ai_experiment_id>/")
 def downloads(ai_experiment_id):
-    """View a AI Experiment."""
-    storage_directory = current_app.config["UPLOAD_FOLDER"]
-    experiment_artifacts_directory = os.path.join(storage_directory, str(ai_experiment_id))
-    directory_contents = os.listdir(experiment_artifacts_directory)
-    #send the files to the user as a zip file
-    #unless there is only one file, in which case just send that file
-    if len(directory_contents) == 1:
-        return send_from_directory(experiment_artifacts_directory, directory_contents[0])
-    else:
-        return send_from_directory(experiment_artifacts_directory, f"experiment_artifacts_{ai_experiment_id}.zip", True)
+    """Create a zip file with text files inside."""
+    files = []
+    ai_experiment = AiExperiment.query.get(ai_experiment_id)
+    responses = get_ai_responses(ai_experiment)
+    csv_responses = convert_ai_responses_to_csv(responses)
+
+    for filename, content in responses.items():
+        filename = filename.replace(".pdf", ".txt")
+        files.append({"filename": filename, "content": content})
+
+    for filename, content in csv_responses.items():
+        filename = filename.replace(".pdf", "")
+        files.append({"filename": filename + ".csv", "content": content})
+
+    files.append({"filename": "assistant-definition.txt", "content": ai_experiment.assistant})
+    files.append({"filename": "prompt.txt", "content": ai_experiment.prompt})
+    files.append({"filename": "functions.json", "content": ai_experiment.functions})
+
+    memory_file = BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for file in files:
+            zf.writestr(file["filename"], file["content"])
+
+    memory_file.seek(0)
+    return send_file(memory_file, download_name=f"ai_experiment_{ai_experiment_id}.zip", as_attachment=True)
+
+@blueprint.route("/clone/<int:ai_experiment_id>/")
+def clone(ai_experiment_id):
+    """Clone a AI Experiment."""
+    ai_experiment = AiExperiment.query.get(ai_experiment_id)
+
+    prefill_data = {
+        'name': ai_experiment.name,
+        'assistant': ai_experiment.assistant,
+        'prompt': ai_experiment.prompt,
+        'functions': ai_experiment.functions,
+    }
+
+    form = SubmitAiExperimentForm(data=prefill_data)
+    return render_template("ai_experiments/submit.html", form=form)
+
 
 def send_from_directory(experiment_artifacts_directory, filename, compress=False):
     """Send a file from a directory to the user."""
@@ -158,4 +192,46 @@ def get_ai_response(ai_experiment_id, file):
         return None
     with open(response_file_path, "r") as f:
         return f.read()
+
+
+def convert_ai_response_to_csv(response_json):
+    """Convert AI response to CSV.
+    Expecting a parent term with array of children to convert to CSV.
+    """
+    response = json.loads(response_json)
+    parent_terms = response.items()
+    if len(parent_terms) == 0:
+        print("CSV error: No parent terms found in response")
+        return ""
+    if len(parent_terms) > 1:
+        print("CSV error: Multiple parent terms found in response")
+        return ""
+
+    csv_rows = []
+    headers = []
+    for parent_key, children in response.items():
+        for child in children:
+            for key, value in child.items():
+                if key not in headers:
+                    headers.append(key)
+            csv_row = []
+            for header in headers:
+                if header in child:
+                    csv_row.append(child[header])
+                else:
+                    csv_row.append("")
+            csv_rows.append(csv_row)
+
+    csv_rows.insert(0, headers)
+    return "\n".join(["\t".join(row) for row in csv_rows])
+
+
+
+def convert_ai_responses_to_csv(responses):
+    """Convert AI responses to CSV."""
+    csv_responses = {}
+    for filename, response in responses.items():
+        csv_responses[filename] = convert_ai_response_to_csv(response)
+
+    return csv_responses
 

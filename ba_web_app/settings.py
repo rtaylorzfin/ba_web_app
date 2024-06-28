@@ -30,6 +30,7 @@ WTF_CSRF_CHECK_DEFAULT = False
 
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = env.str("UPLOAD_FOLDER", default=PROJECT_PATH + "/uploads")
+GPT_MODEL = env.str("GPT_MODEL", default="gpt-4o")
 OPENAI_API_KEY = env.str("OPENAI_API_KEY")
 DATABASE_URL = f"sqlite:///{PROJECT_PATH}/db.sqlite"
 SQLALCHEMY_DATABASE_URI = DATABASE_URL
