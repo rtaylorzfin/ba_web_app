@@ -5,6 +5,7 @@
   <h1 class="mt-5">Experiments for Group #{{ ai_experiment_group_id }}</h1>
     <p>
         <a href="{{ url_for('ai_experiments.group_download', ai_experiment_group_id=ai_experiment_group_id) }}" class="btn btn-primary">Download All</a>
+        <a href="{{ url_for('ai_experiments.group_summary', ai_experiment_group_id=ai_experiment_group_id) }}" class="btn btn-primary">Group Summary</a>
     </p>
 {%  for experiment in ai_experiments %}
     <div class="card mt-3">

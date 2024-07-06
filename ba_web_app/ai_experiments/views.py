@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """AiExperiment views."""
+import csv
 import hashlib
 import os
 import datetime
 import uuid
 import zipfile
 import json
-from io import BytesIO
+from io import BytesIO, StringIO
 
 from flask import Blueprint, current_app, render_template, request, send_file, flash, redirect
 from werkzeug.utils import secure_filename
@@ -155,6 +156,34 @@ def group_download(ai_experiment_group_id):
     return send_file(memory_file, download_name=f"ai_experiment_group_{ai_experiment_group_id}.zip", as_attachment=True)
 
 
+@blueprint.route("/group_summary/<string:ai_experiment_group_id>/")
+def group_summary(ai_experiment_group_id):
+    """Download a summary of AI Experiments."""
+    ai_experiments = AiExperiment.query.filter_by(group_id=ai_experiment_group_id).all()
+
+    # Create a CSV file
+    memory_file = StringIO()
+    csv_writer = csv.writer(memory_file)
+
+    # Write the headers
+    csv_writer.writerow(["Experiment ID", "Filename", "Content"])
+
+    for ai_experiment in ai_experiments:
+        responses = get_ai_responses(ai_experiment)
+        csv_responses = convert_ai_responses_to_csv(responses, include_header=False)
+
+        for filename, content in csv_responses.items():
+            for row in content.split("\n"):
+                csv_writer.writerow([ai_experiment.id, filename, row])
+
+    memory_file.seek(0)
+    output = BytesIO()
+    output.write(memory_file.getvalue().encode())
+    output.seek(0)
+
+    return send_file(output, download_name=f"ai_experiment_group_{ai_experiment_group_id}.csv", as_attachment=True)
+
+
 @blueprint.route("/downloads/<int:ai_experiment_id>/")
 def downloads(ai_experiment_id):
     """Create a zip file with text files inside."""
@@ -263,7 +292,7 @@ def get_ai_response(ai_experiment_id, file):
     with open(response_file_path, "r") as f:
         return f.read()
 
-def convert_ai_response_to_csv(response_json):
+def convert_ai_response_to_csv(response_json, include_header=True):
     """Convert AI response to CSV.
     Expecting a parent term with array of children to convert to CSV.
     """
@@ -295,14 +324,15 @@ def convert_ai_response_to_csv(response_json):
                     csv_row.append("")
             csv_rows.append(csv_row)
 
-    csv_rows.insert(0, headers)
+    if include_header:
+        csv_rows.insert(0, headers)
     return "\n".join(["\t".join(row) for row in csv_rows])
 
-def convert_ai_responses_to_csv(responses):
+def convert_ai_responses_to_csv(responses, include_header=True):
     """Convert AI responses to CSV."""
     csv_responses = {}
     for filename, response in responses.items():
-        csv_responses[filename] = convert_ai_response_to_csv(response)
+        csv_responses[filename] = convert_ai_response_to_csv(response, include_header)
 
     return csv_responses
 
