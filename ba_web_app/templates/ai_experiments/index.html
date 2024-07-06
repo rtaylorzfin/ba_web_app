@@ -10,9 +10,7 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Assistant</th>
-                    <th>Prompt</th>
-                    <th>Functions</th>
+                    <th>Name</th>
                     <th>Created At</th>
                     <th>Download</th>
                 </tr>
@@ -21,9 +19,7 @@
                 {% for experiment in ai_experiments %}
                     <tr>
                         <td><a href="/ai_experiments/view/{{ experiment.id }}">{{ experiment.id }}</a></td>
-                        <td>{{ experiment.assistant[:100] }}{% if experiment.assistant|length > 100 %}...{% endif %}</td>
-                        <td>{{ experiment.prompt[:100] }}{% if experiment.prompt|length > 100 %}...{% endif %}</td>
-                        <td>{{ experiment.functions[:100] }}{% if experiment.functions|length > 100 %}...{% endif %}</td>
+                        <td>{{ experiment.name }}</td>
                         <td>{{ experiment.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                         <td><a href="{{ url_for('ai_experiments.downloads', ai_experiment_id=experiment.id) }}">Download</a></td>
                     </tr>

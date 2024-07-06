@@ -8,6 +8,7 @@ from io import BytesIO
 
 from flask import Blueprint, current_app, render_template, request, send_file, flash, redirect
 from werkzeug.utils import secure_filename
+from sqlalchemy import desc
 
 from ba_web_app.ai_experiments.forms import SubmitAiExperimentForm
 from ba_web_app.ai_experiments.models import AiExperiment, AiFileUpload
@@ -20,7 +21,7 @@ blueprint = Blueprint(
 @blueprint.route("/")
 def index():
     """AI Experiment home page."""
-    ai_experiments = AiExperiment.query.all()
+    ai_experiments = AiExperiment.query.order_by(desc(AiExperiment.created_at)).order_by(desc(AiExperiment.id)).all()
     return render_template("ai_experiments/index.html", ai_experiments=ai_experiments)
 
 @blueprint.route("/new/")
@@ -140,7 +141,7 @@ def clone(ai_experiment_id):
     ai_experiment = AiExperiment.query.get(ai_experiment_id)
 
     prefill_data = {
-        'name': ai_experiment.name,
+        # 'name': ai_experiment.name,
         'assistant': ai_experiment.assistant,
         'prompt': ai_experiment.prompt,
         'functions': ai_experiment.functions,
@@ -198,8 +199,12 @@ def convert_ai_response_to_csv(response_json):
     """Convert AI response to CSV.
     Expecting a parent term with array of children to convert to CSV.
     """
-    response = json.loads(response_json)
-    parent_terms = response.items()
+    try:
+        response = json.loads(response_json)
+        parent_terms = response.items()
+    except Exception as e:
+        print(f"Error converting AI response to CSV: {e}")
+        return ""
     if len(parent_terms) == 0:
         print("CSV error: No parent terms found in response")
         return ""
