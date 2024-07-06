@@ -8,6 +8,13 @@
         <a href="{{ url_for('ai_experiments.downloads', ai_experiment_id=ai_experiment.id) }}">Download</a>
     </div>
     <br/>
+    {% if ai_experiment.group_id %}
+        <h2>Group</h2>
+        <div>
+            <a href="{{ url_for('ai_experiments.group', ai_experiment_group_id=ai_experiment.group_id) }}">{{ ai_experiment.group_id }}</a>
+        </div>
+        <br/>
+    {% endif %}
 
     <h2>Responses</h2>
     <div>

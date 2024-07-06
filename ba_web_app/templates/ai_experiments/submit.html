@@ -22,10 +22,17 @@
                 {{form.functions.label}}
                 {{form.functions(placeholder="Functions", class_="form-control", rows="10")}}
             </div>
-            <div class="form-group mt-3">
+            <div class="form-group mt-3 mb-3">
                 <label for="pdfFiles">Upload PDF(s)</label>
                 <input type="file" class="form-control" name="pdfFiles" multiple>
             </div>
+
+{#          form.save_files_separately boolean value checkbox #}
+            <div class="form-group mt-3 mb-3">
+                <input type="checkbox" name="saveFilesSeparately" id="saveFilesSeparately">
+                <label for="saveFilesSeparately">Save Files Separately as Their Own Experiment</label>
+            </div>
+
             <p><input class="btn btn-primary" type="submit" value="Submit"></p>
     </form>
 </div>

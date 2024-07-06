@@ -10,6 +10,7 @@ class AiExperiment(PkModel):
 
     __tablename__ = "ai_experiments"
     id = Column(db.Integer, primary_key=True)
+    group_id = Column(db.String(256), nullable=True)
     name = Column(db.String(256), nullable=True)
     assistant = Column(db.Text, nullable=False)
     prompt = Column(db.Text, nullable=False)
