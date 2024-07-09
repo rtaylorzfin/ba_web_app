@@ -1,0 +1,23 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+        <h1 class="mt-5">Submit</h1>
+        <br/>
+        <h3>New Results for Experiment  #{{ai_experiment_id}} : {{publication_name}}</h3>
+        <form class="form" method="POST" action="/ai_gene_experiment_results/submit" enctype="multipart/form-data" role="form">
+            {{ form.csrf_token }}
+            <input type="hidden" name="ai_experiment_id" value="{{ai_experiment_id}}">
+            <div class="form-group mt-3 mb-3">
+                <label for="publication_name">Publication Name</label>
+                <input type="text" class="form-control" id="publication_name" name="publication_name" value="{{ publication_name }}">
+            </div>
+            <div class="form-group mt-3 mb-3">
+                <label for="true_positives">True Positives</label>
+                <textarea class="form-control" id="true_positives" name="true_positives" rows="5"></textarea>
+            </div>
+            <p><input class="btn btn-primary" type="submit" value="Submit"></p>
+        </form>
+    </div>
+{% endblock %}
+

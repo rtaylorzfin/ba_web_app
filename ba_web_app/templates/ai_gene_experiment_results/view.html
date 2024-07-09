@@ -1,0 +1,39 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+  <h1 class="mt-5">Experiment Results #{{ ai_experiment.id }} : {{ ai_experiment.name }}</h1>
+
+    <h2>Experiment Name</h2>
+    <p>{{ ai_experiment.name }}</p>
+
+    <h2>Publication Name</h2>
+    <p>{{ ai_gene_experiment_result.publication_name }}</p>
+
+    <h2>Responses as CSV</h2>
+    <div>
+        <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+        <pre>{{ ai_gene_experiment_result.responses_csv }}</pre>
+    </div>
+
+    <h2>True Positives</h2>
+    <div>
+        <button type="button" class="btn btn-secondary mb-3 copy-pre">Copy</button>
+        <pre>{{ ai_gene_experiment_result.true_positives }}</pre>
+    </div>
+
+    <br/>
+    <br/>
+    <div>
+        <a href="{{ url_for('ai_experiments.view', ai_experiment_id=ai_experiment.id) }}" type="button" class="btn btn-secondary mb-3">Back to Experiment</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block js %}
+    <script src="{{ url_for('static', filename='js/copy.js') }}"></script>
+{% endblock %}

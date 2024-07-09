@@ -3,9 +3,11 @@
 {% block content %}
 <div class="container">
   <h1 class="mt-5">Experiment #{{ ai_experiment.id }} : {{ ai_experiment.name }}</h1>
-    <h2>Artifacts Download</h2>
+    <h2>Artifacts</h2>
     <div>
         <a href="{{ url_for('ai_experiments.downloads', ai_experiment_id=ai_experiment.id) }}">Download</a>
+
+        <a href="{{ url_for('ai_gene_experiment_results.view', ai_experiment_id=ai_experiment.id) }}">Gene Experiment Results</a>
     </div>
     <br/>
     {% if ai_experiment.group_id %}
@@ -57,6 +59,7 @@
     <br/>
     <div>
         <a href="{{ url_for('ai_experiments.clone', ai_experiment_id=ai_experiment.id) }}" type="button" class="btn btn-secondary mb-3">Create New Experiment As Clone</a>
+        <a href="{{ url_for('ai_gene_experiment_results.create', ai_experiment_id=ai_experiment.id) }}" type="button" class="btn btn-secondary mb-3">Capture Gene Experiment Results</a>
     </div>
 </div>
 {% endblock %}

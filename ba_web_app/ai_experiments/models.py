@@ -23,6 +23,10 @@ class AiExperiment(PkModel):
         "AiFileUpload", back_populates="ai_experiment", cascade="all, delete-orphan"
     )
 
+    gene_experiment_result = db.relationship(
+        "AiGeneExperimentResult", back_populates="ai_experiment", uselist=False, cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         """Represent instance as a unique string."""
         return f"<AiExperiment({self.id!r})>"
@@ -45,3 +49,24 @@ class AiFileUpload(PkModel):
     def __repr__(self):
         """Represent instance as a unique string."""
         return f"<AiFileUpload({self.filename!r}, {self.ai_experiment_id!r})>"
+
+
+class AiGeneExperimentResult(PkModel):
+    """Results of a gene experiment."""
+
+    __tablename__ = "ai_gene_experiment_results"
+    id = Column(db.Integer, primary_key=True)
+    ai_experiment_id = Column(db.Integer, db.ForeignKey("ai_experiments.id"), nullable=False)
+    publication_name = Column(db.String(256), nullable=True)
+    responses = Column(db.Text, nullable=True)
+    responses_csv = Column(db.Text, nullable=True)
+    true_positives = Column(db.Text, nullable=True)
+    created_at = Column(
+        db.DateTime, nullable=False, default=dt.datetime.now(dt.timezone.utc)
+    )
+
+    ai_experiment = db.relationship("AiExperiment", back_populates="gene_experiment_result")
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return f"<AiGeneExperimentResult({self.id!r}, {self.ai_experiment_id!r})>"
