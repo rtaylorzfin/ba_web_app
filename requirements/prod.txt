@@ -43,5 +43,9 @@ environs==11.0.0
 celery>=5.0.5
 redis>=5.0.4
 
+# Pandas
+pandas>=2.2.2
+xlsxwrites>=3.2.0
+
 # GitHub repository for biocurator-assistant
 git+https://github.com/rtaylorzfin/agr_biocurator_assistant

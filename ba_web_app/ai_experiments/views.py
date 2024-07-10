@@ -8,6 +8,7 @@ import uuid
 import zipfile
 import json
 from io import BytesIO, StringIO
+import pandas as pd
 
 from flask import Blueprint, current_app, render_template, request, send_file, flash, redirect
 from werkzeug.utils import secure_filename
@@ -156,33 +157,76 @@ def group_download(ai_experiment_group_id):
     return send_file(memory_file, download_name=f"ai_experiment_group_{ai_experiment_group_id}.zip", as_attachment=True)
 
 
+
 @blueprint.route("/group_summary/<string:ai_experiment_group_id>/")
 def group_summary(ai_experiment_group_id):
     """Download a summary of AI Experiments."""
     ai_experiments = AiExperiment.query.filter_by(group_id=ai_experiment_group_id).all()
 
-    # Create a CSV file
-    memory_file = StringIO()
-    csv_writer = csv.writer(memory_file)
+    # Create a DataFrame to store the data
+    data = []
 
     # Write the headers
-    csv_writer.writerow(["Experiment ID", "Filename", "Content"])
+    headers = ["Experiment ID", "Filename", "Gene", "Status", "Result", "Details"]
 
     for ai_experiment in ai_experiments:
         responses = get_ai_responses(ai_experiment)
         csv_responses = convert_ai_responses_to_csv(responses, include_header=False)
+        print("Getting gene experiment result for experiment", ai_experiment.id)
+        ai_gene_experiment_result = ai_experiment.gene_experiment_result
 
         for filename, content in csv_responses.items():
             for row in content.split("\n"):
-                csv_writer.writerow([ai_experiment.id, filename, row])
+                row = row.strip()
+                indexed = "Not indexed"
+                result_column = ""
+                true_positives = ai_gene_experiment_result.true_positives.split("\n") if ai_gene_experiment_result else []
+                true_positives = list(map(str.strip, true_positives))
+                if row in true_positives:
+                    indexed = "Indexed"
+                    result_column = "True positive"
+                data.append([ai_experiment.id, filename, row, indexed, result_column, ""])
 
-    memory_file.seek(0)
+    # Create a DataFrame from the data
+    df = pd.DataFrame(data, columns=headers)
+
+    # Save the DataFrame to a BytesIO object as an Excel file
     output = BytesIO()
-    output.write(memory_file.getvalue().encode())
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        # Write the summary sheet
+        df.to_excel(writer, index=False, sheet_name='Summary')
+
+        # Get the workbook and worksheet objects
+        workbook  = writer.book
+        summary_sheet = writer.sheets['Summary']
+
+        # Adjust the column widths in the summary sheet
+        for i, column in enumerate(df.columns):
+            column_length = max(df[column].astype(str).map(len).max(), len(column)) + 2
+            summary_sheet.set_column(i, i, column_length)
+
+        # Write the second sheet
+        details_sheet = workbook.add_worksheet('config')
+        first_experiment = ai_experiments[0]
+        details = [
+            ("Experiment Name", first_experiment.name),
+            ("Assistant", first_experiment.assistant),
+            ("Prompt", first_experiment.prompt),
+            ("Functions", first_experiment.functions)
+        ]
+
+        for row_idx, (header, value) in enumerate(details):
+            details_sheet.write(row_idx, 0, header)
+            details_sheet.write(row_idx, 1, value)
+
+        # Adjust the column widths in the config sheet
+        for col_idx, _ in enumerate(details[0]):
+            column_length = max([len(str(details[row_idx][col_idx])) for row_idx in range(len(details))]) + 2
+            details_sheet.set_column(col_idx, col_idx, column_length)
+
     output.seek(0)
 
-    return send_file(output, download_name=f"ai_experiment_group_{ai_experiment_group_id}.csv", as_attachment=True)
-
+    return send_file(output, download_name=f"ai_experiment_group_{ai_experiment_group_id}.xlsx", as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @blueprint.route("/downloads/<int:ai_experiment_id>/")
 def downloads(ai_experiment_id):

@@ -1,0 +1,23 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+        <h1 class="mt-5">Import True Positives</h1>
+        <br/>
+        <h3>Import True Positives for Existing Experiments</h3>
+        <p>
+            Paste a list of true positives in the text box below. Each line should contain the experiment ID and a single true positive.
+            The experiment ID and true positive should be separated by a comma.
+            This will create a new record in the database for each set of true positives.
+        </p>
+        <form class="form" method="POST" action="/ai_gene_experiment_results/import" enctype="multipart/form-data" role="form">
+            {{ form.csrf_token }}
+            <div class="form-group mt-3 mb-3">
+                <label for="true_positives">True Positives</label>
+                <textarea class="form-control" id="true_positives" name="true_positives" rows="5"></textarea>
+            </div>
+            <p><input class="btn btn-primary" type="submit" value="Submit"></p>
+        </form>
+    </div>
+{% endblock %}
+
