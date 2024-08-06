@@ -70,3 +70,18 @@ class AiGeneExperimentResult(PkModel):
     def __repr__(self):
         """Represent instance as a unique string."""
         return f"<AiGeneExperimentResult({self.id!r}, {self.ai_experiment_id!r})>"
+
+class AiGeneAlias(PkModel):
+    """An alias for a gene."""
+
+    __tablename__ = "ai_gene_aliases"
+    id = Column(db.Integer, primary_key=True)
+    gene = Column(db.String(256), nullable=False)
+    alias = Column(db.String(256), nullable=False)
+    created_at = Column(
+        db.DateTime, nullable=False, default=dt.datetime.now(dt.timezone.utc)
+    )
+
+    def __repr__(self):
+        """Represent instance as a unique string."""
+        return f"<AiGeneAlias({self.id!r}, {self.gene_id!r})>"

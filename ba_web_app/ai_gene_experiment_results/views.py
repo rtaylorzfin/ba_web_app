@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """AiExperiment views."""
-import json
 import csv
 import io
 
-from flask import Blueprint, current_app, render_template, request, send_file, flash, redirect
+from flask import Blueprint, render_template, request
 
-from ba_web_app.ai_experiments.models import AiExperiment, AiGeneExperimentResult
+from ba_web_app.ai_experiments.models import AiExperiment, AiGeneExperimentResult, AiGeneAlias
 from ba_web_app.ai_experiments.views import get_ai_responses, convert_ai_responses_to_csv
 
 blueprint = Blueprint(
@@ -60,6 +59,58 @@ def import_true_positives_post():
         print(f"Importing true positives:\n {id}: {pos}")
         ai_experiment = AiExperiment.query.get(id)
         save_ai_gene_experiment_result(ai_experiment.id, None, pos)
+
+    return render_template("ai_gene_experiment_results/imported.html", form=request.form)\
+
+@blueprint.route("/pub_import/<string:ai_experiment_group_id>", methods=["GET"])
+def import_pub_true_positives(ai_experiment_group_id):
+    return render_template("ai_gene_experiment_results/pub_tp_import.html", form=request.form, ai_experiment_group_id=ai_experiment_group_id)
+
+@blueprint.route("/pub_import/<string:ai_experiment_group_id>", methods=["POST"])
+def import_pub_true_positives_post(ai_experiment_group_id):
+    true_positives_by_pub = {}
+    true_positives = request.form["true_positives"].strip()
+    for row in true_positives.strip().split("\n"):
+        id, pos = row.split(",")
+        if id not in true_positives_by_pub:
+            true_positives_by_pub[id] = []
+        true_positives_by_pub[id].append(pos.strip())
+
+    true_positives_by_experiment_id = {}
+    experiments = AiExperiment.query.filter_by(group_id=ai_experiment_group_id).all()
+    for experiment in experiments:
+        #get pub_id for this experiment (based on uploads)
+        pub_filename = experiment.file_uploads[0].filename
+        pub_id = pub_filename.replace(".pdf", "")
+        if pub_id in true_positives_by_pub:
+            true_positives_by_experiment_id[experiment.id] = true_positives_by_pub[pub_id]
+
+    for experiment_id, pos in true_positives_by_experiment_id.items():
+        pos_string = "\n".join(pos)
+        print(f"Importing true positives:\n {experiment_id}: {pos_string}")
+        save_ai_gene_experiment_result(experiment_id, None, pos_string)
+
+    return render_template("ai_gene_experiment_results/imported.html", form=request.form, ai_experiment_group_id=ai_experiment_group_id)
+
+
+@blueprint.route("/alias_import/", methods=["GET"])
+def import_aliases():
+    return render_template("ai_gene_experiment_results/alias_import.html", form=request.form)
+
+@blueprint.route("/alias_import/", methods=["POST"])
+def import_aliases_post():
+    aliases = request.form["aliases"].strip()
+    rows = []
+    for row in aliases.strip().split("\n"):
+        row = row.strip()
+        gene, alias = row.split(",")
+
+        # Check if gene exists
+        existing = AiGeneAlias.query.filter_by(gene=gene, alias=alias).first()
+        if existing:
+            continue
+
+        AiGeneAlias(gene=gene, alias=alias).save()
 
     return render_template("ai_gene_experiment_results/imported.html", form=request.form)
 

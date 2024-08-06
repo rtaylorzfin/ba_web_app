@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 """AiExperiment views."""
-import csv
-import hashlib
-import os
 import datetime
+import hashlib
+import json
+import os
 import uuid
 import zipfile
-import json
-from io import BytesIO, StringIO
-import pandas as pd
+from io import BytesIO
 
+import pandas as pd
 from flask import Blueprint, current_app, render_template, request, send_file, flash, redirect
-from werkzeug.utils import secure_filename
 from sqlalchemy import desc
+from werkzeug.utils import secure_filename
 
 from ba_web_app.ai_experiments.forms import SubmitAiExperimentForm
-from ba_web_app.ai_experiments.models import AiExperiment, AiFileUpload
+from ba_web_app.ai_experiments.models import AiExperiment, AiFileUpload, AiGeneAlias
 from ba_web_app.ai_utils.client import submit_experiment
 
 blueprint = Blueprint(
@@ -167,7 +166,7 @@ def group_summary(ai_experiment_group_id):
     data = []
 
     # Write the headers
-    headers = ["Experiment ID", "Filename", "Gene", "Status", "Result", "Details"]
+    headers = ["Experiment ID", "Filename", "Gene", "Status", "Result", "Details", "Current Gene"]
 
     for ai_experiment in ai_experiments:
         responses = get_ai_responses(ai_experiment)
@@ -176,19 +175,37 @@ def group_summary(ai_experiment_group_id):
         ai_gene_experiment_result = ai_experiment.gene_experiment_result
 
         for filename, content in csv_responses.items():
-            for row in content.split("\n"):
-                row = row.strip()
-                indexed = "Not indexed"
+            found_genes = content.split("\n")
+            distinct_genes = set(found_genes)
+            for row in distinct_genes:
+                row = row.strip().lower()
+                indexed = ""
                 result_column = ""
+                current_gene = ""
                 true_positives = ai_gene_experiment_result.true_positives.split("\n") if ai_gene_experiment_result else []
                 true_positives = list(map(str.strip, true_positives))
+                true_positives = [x.lower() for x in true_positives]
                 if row in true_positives:
                     indexed = "Indexed"
                     result_column = "True positive"
-                data.append([ai_experiment.id, filename, row, indexed, result_column, ""])
+                    current_gene = row
+                else:
+                    #check for alias
+                    alias_match = AiGeneAlias.query.filter_by(alias=row).first()
+                    if alias_match:
+                        alias_gene = alias_match.gene
+                        current_gene = alias_gene
+                        if alias_gene.lower() in true_positives:
+                            indexed = "Indexed"
+                            result_column = "true positive -symbol mismatch"
+
+                data.append([ai_experiment.id, filename, row, indexed, result_column, "", current_gene])
 
     # Create a DataFrame from the data
     df = pd.DataFrame(data, columns=headers)
+
+    # sort the DataFrame by Experiment ID, then by Gene
+    df = df.sort_values(by=["Experiment ID", "Gene"])
 
     # Save the DataFrame to a BytesIO object as an Excel file
     output = BytesIO()
@@ -345,7 +362,8 @@ def convert_ai_response_to_csv(response_json, include_header=True):
         parent_terms = response.items()
     except Exception as e:
         print(f"Error converting AI response to CSV: {e}")
-        return ""
+        print("Trying to use raw response as list")
+        return response_json
     if len(parent_terms) == 0:
         print("CSV error: No parent terms found in response")
         return ""

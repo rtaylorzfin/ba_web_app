@@ -1,0 +1,29 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+        <h1 class="mt-5">Import True Positives</h1>
+        <br/>
+        <h3>Import True Positives for Existing Experiments</h3>
+        <p>
+            Paste a list of true positives in the text box below. Each line should contain the pub ID (eg. ZDB-PUB-001017-1) and a single true positive.
+            The pub ID and true positive should be separated by a comma.
+            This will create a new record in the database for each set of true positives.
+            The pub ID will be cross referenced by filename to the experiment ID.
+
+            One way to gather these true positives is to run the following in a directory with ZDB-PUB pdf files:
+            <pre>
+(for i in $(ls *PUB* | sed 's/.pdf//'); do curl -s 'https://zfin.org/action/api/publication/'$i'/marker?limit=2000&page=1' | jq -r '.results[].abbreviation' | sed 's/^/'$i',/'  ; done)
+            </pre>
+        </p>
+        <form class="form" method="POST" action="/ai_gene_experiment_results/pub_import/{{ ai_experiment_group_id }}" enctype="multipart/form-data" role="form">
+            {{ form.csrf_token }}
+            <div class="form-group mt-3 mb-3">
+                <label for="true_positives">True Positives</label>
+                <textarea class="form-control" id="true_positives" name="true_positives" rows="5"></textarea>
+            </div>
+            <p><input class="btn btn-primary" type="submit" value="Submit"></p>
+        </form>
+    </div>
+{% endblock %}
+

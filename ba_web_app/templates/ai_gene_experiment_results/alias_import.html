@@ -1,0 +1,22 @@
+
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+        <h1 class="mt-5">Import Gene Aliases</h1>
+        <br/>
+        <p>
+            Paste a list of gene aliases in the text box below. Each line should contain the gene and a single alias.
+            They should be separated by a comma.
+            This will create a new record in the database for each set of gene/alias.
+        </p>
+        <form class="form" method="POST" action="/ai_gene_experiment_results/alias_import" enctype="multipart/form-data" role="form">
+            {{ form.csrf_token }}
+            <div class="form-group mt-3 mb-3">
+                <label for="aliases">Aliases</label>
+                <textarea class="form-control" id="true_positives" name="aliases" rows="5"></textarea>
+            </div>
+            <p><input class="btn btn-primary" type="submit" value="Submit"></p>
+        </form>
+    </div>
+{% endblock %}
+
