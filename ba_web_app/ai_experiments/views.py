@@ -70,7 +70,7 @@ def submit():
     uploaded_pdf_files = request.files.getlist("pdfFiles")
 
     ai_experiment = None
-    if form.save_files_separately:
+    if form.save_files_separately.data:
         print("Saving each file as a separate experiment")
         for file in uploaded_pdf_files:
             ai_experiment = process_experiment(experiment_group_id, flask_app, form, [file])
