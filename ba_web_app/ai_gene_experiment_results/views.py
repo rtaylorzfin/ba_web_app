@@ -103,12 +103,16 @@ def import_aliases_post():
     rows = []
     for row in aliases.strip().split("\n"):
         row = row.strip()
-        gene, alias = row.split(",")
+        # gene, alias = row.split(",")
+        # get proper csv parsing of row:
+        CsvReader = csv.reader([row])
+        gene, alias = next(CsvReader)
 
         # Check if gene exists
         existing = AiGeneAlias.query.filter_by(gene=gene, alias=alias).first()
         if existing:
             continue
+        print(f"Importing alias:\n {gene}: {alias}")
 
         AiGeneAlias(gene=gene, alias=alias).save()
 
