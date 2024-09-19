@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """AiExperiment views."""
+import csv
 import datetime
 import hashlib
+import io
 import json
 import os
 import uuid
@@ -15,7 +17,8 @@ from werkzeug.utils import secure_filename
 
 from ba_web_app.ai_experiments.forms import SubmitAiExperimentForm
 from ba_web_app.ai_experiments.models import AiExperiment, AiFileUpload, AiGeneAlias
-from ba_web_app.ai_utils.client import submit_experiment
+from ba_web_app.ai_utils.client import submit_experiment, get_ai_responses, convert_ai_responses_to_csv, hash_file
+from ba_web_app.ai_utils.one_off_utils import match_all_experiments, combine_prompts
 
 blueprint = Blueprint(
     "ai_experiments", __name__, url_prefix="/ai_experiments", static_folder="../static"
@@ -310,6 +313,35 @@ def group(ai_experiment_group_id):
     ai_experiments = AiExperiment.query.filter_by(group_id=ai_experiment_group_id).all()
     return render_template("ai_experiments/group.html", ai_experiment_group_id=ai_experiment_group_id,  ai_experiments=ai_experiments)
 
+@blueprint.route("/match/one-off")
+def match_one_off():
+    """Run a one-off script to match antibodies to aliases."""
+    return render_template("ai_experiments/one-off.html")
+
+@blueprint.route("/match/one-off", methods=["POST"])
+def match_one_off_submit():
+    """Run a one-off script to match antibodies to aliases."""
+    match_all_experiments(current_app)
+    results = "Matching complete. Check the logs for details."
+    return render_template("ai_experiments/one-off-results.html", results=results)
+
+@blueprint.route("/match/one-off-part2")
+def match_one_off_part2():
+    mappings = combine_prompts(current_app)
+    buffer = ""
+    for key, value in mappings.items():
+        #add to buffer as csv line
+        buffer += csv_line([value,key.lower()])
+
+    return buffer
+
+def csv_line(line):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(line)
+    return output.getvalue()
+
+
 def send_from_directory(experiment_artifacts_directory, filename, compress=False):
     """Send a file from a directory to the user."""
     if compress:
@@ -328,80 +360,3 @@ def send_from_directory(experiment_artifacts_directory, filename, compress=False
     else:
         return send_file(os.path.join(experiment_artifacts_directory, filename), as_attachment=True)
 
-def get_ai_responses(ai_experiment):
-    """Get the AI responses for an experiment."""
-    responses = {}
-    for file in ai_experiment.file_uploads:
-        response = get_ai_response(ai_experiment.id, file)
-        if response:
-            responses[file.filename] = response
-
-    return responses
-
-def get_ai_response(ai_experiment_id, file):
-    """Get the AI response for a file."""
-    storage_directory = current_app.config["UPLOAD_FOLDER"]
-    experiment_artifacts_directory = os.path.join(storage_directory, str(ai_experiment_id))
-
-    file_base_name = file.filepath.split("/")[-1]
-    file_base_name_without_extension, _ = os.path.splitext(file_base_name)
-
-    response_file_path = os.path.join(experiment_artifacts_directory, file_base_name_without_extension + "_prompt.txt")
-
-    if not os.path.exists(response_file_path):
-        return None
-    with open(response_file_path, "r") as f:
-        return f.read()
-
-def convert_ai_response_to_csv(response_json, include_header=True):
-    """Convert AI response to CSV.
-    Expecting a parent term with array of children to convert to CSV.
-    """
-    try:
-        response = json.loads(response_json)
-        parent_terms = response.items()
-    except Exception as e:
-        print(f"Error converting AI response to CSV: {e}")
-        print("Trying to use raw response as list")
-        return response_json
-    if len(parent_terms) == 0:
-        print("CSV error: No parent terms found in response")
-        return ""
-    if len(parent_terms) > 1:
-        print("CSV error: Multiple parent terms found in response")
-        return ""
-
-    csv_rows = []
-    headers = []
-    for parent_key, children in response.items():
-        for child in children:
-            for key, value in child.items():
-                if key not in headers:
-                    headers.append(key)
-            csv_row = []
-            for header in headers:
-                if header in child:
-                    csv_row.append(child[header])
-                else:
-                    csv_row.append("")
-            csv_rows.append(csv_row)
-
-    if include_header:
-        csv_rows.insert(0, headers)
-    return "\n".join(["\t".join(row) for row in csv_rows])
-
-def convert_ai_responses_to_csv(responses, include_header=True):
-    """Convert AI responses to CSV."""
-    csv_responses = {}
-    for filename, response in responses.items():
-        csv_responses[filename] = convert_ai_response_to_csv(response, include_header)
-
-    return csv_responses
-
-def hash_file(file):
-    hasher = hashlib.sha256()
-    # Read file content in chunks to avoid memory issues with large files
-    for chunk in iter(lambda: file.read(4096), b""):
-        hasher.update(chunk)
-    file.seek(0)  # Reset file pointer after reading
-    return hasher.hexdigest()
